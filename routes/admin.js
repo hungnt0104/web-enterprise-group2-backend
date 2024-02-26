@@ -38,5 +38,41 @@ router.post('/createAccount', async(req, res) =>{
         res.send({status: "error"})
       }
     });
+// Update Account
+router.put('/updateAccount/:id', async (req, res) => {
+  const { name, email, password, role } = req.body;
 
+  try {
+      const user = await UserModel.findByIdAndUpdate(req.params.id, {
+          name,
+          email,
+          password,
+          role
+      }, { new: true });
+
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ success: true, message: "User updated successfully", data: user });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+
+// Delete Account
+router.delete('/deleteAccount/:id', async (req, res) => {
+  try {
+      const user = await UserModel.findByIdAndDelete(req.params.id);
+
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ success: true, message: "User deleted successfully", data: user });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
 module.exports = router;
