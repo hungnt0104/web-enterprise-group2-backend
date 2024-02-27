@@ -45,7 +45,6 @@ router.put('/updateAccount/:id', async (req, res) => {
   try {
       const user = await UserModel.findByIdAndUpdate(req.params.id, {
           name,
-          email,
           password,
           role
       }, { new: true });
