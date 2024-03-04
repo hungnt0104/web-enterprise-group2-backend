@@ -14,6 +14,10 @@ var bodyParser = require('body-parser');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var adminRouter = require('./routes/admin');
+// Admin Role
+const eventRoutes = require("./routes/Admin/EventRoute");
+const ideaRoutes = require("./routes/Admin/IdeaRoute");
+
 
 var app = express();
 
@@ -34,7 +38,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/admin', adminRouter)
+app.use('/admin', adminRouter);
+//route for Admin Role
+app.use("/admin/events", eventRoutes);
+app.use("/admin/ideas", ideaRoutes);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -61,6 +69,11 @@ app.use(function(err, req, res, next) {
 });
 
 port = process.env.PORT || 5000
-app.listen(port)
+// app.listen(port)
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Click here to access: <a href="http://localhost:${port}" target="_blank">http://localhost:${port}</a>`);
+});
 
 module.exports = app;
