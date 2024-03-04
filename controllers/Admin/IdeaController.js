@@ -3,8 +3,8 @@ const Idea = require("../../models/Admin/IdeaModel");
 
 exports.submitIdea = async (req, res) => {
   try {
-    const { eventId, content, submittedBy } = req.body;
-    const idea = new Idea({ eventId, content, submittedBy });
+    const { eventId, image, document, submittedBy } = req.body;
+    const idea = new Idea({ eventId, image, document, submittedBy });
     await idea.save();
     res.status(201).json(idea);
   } catch (err) {

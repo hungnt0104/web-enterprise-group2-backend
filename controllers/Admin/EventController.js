@@ -3,8 +3,8 @@ const Event = require("../../models/Admin/EventModel");
 
 exports.createEvent = async (req, res) => {
   try {
-    const { name, closureDate } = req.body;
-    const event = new Event({ name, closureDate });
+    const { name, submissionClosureDate, finalClosureDate } = req.body;
+    const event = new Event({ name, submissionClosureDate, finalClosureDate });
     await event.save();
     res.status(201).json(event);
     console.log(event);
