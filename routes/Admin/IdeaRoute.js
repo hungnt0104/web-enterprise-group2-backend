@@ -6,4 +6,4 @@ const ideaController = require("../../controllers/Admin/IdeaController");
 router.post("/", ideaController.submitIdea);
 router.get("/", ideaController.getAllIdeas);
 
-module.exports = router;
+module.exports = router; 
