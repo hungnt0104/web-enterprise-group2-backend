@@ -89,14 +89,14 @@ router.post('/createEvent', (req, res) => {
   
   // Calculate the final closure date (7 days after the first closure date)
   const finalClosureDate = new Date(firstClosureDate);
-  finalClosureDate.setDate(finalClosureDate.getDate() + 7);
+//   finalClosureDate.setDate(finalClosureDate.getDate());
 
   const newEvent = new EventModel({ eventName, description, status, faculty, closureDates: { firstClosureDate, finalClosureDate } });
   newEvent.save((err, event) => {
       if (err) {
           res.status(500).send(err.message);
       } else {
-          res.status(201).json(event);
+          res.send({status: "ok"})
       }
   });
 });
@@ -134,6 +134,11 @@ router.delete('/deleteEvent/:eventId', (req, res) => {
 });
 
 //Faculty
+//Show All Faculty
+router.get('/faculty', async(req, res)=>{
+    const data = await FacultyModel.find({})
+    res.json({success : true, data:data})
+   })
 
 router.post('/createFaculty', function(req, res) {
     // Extract data from the request body
