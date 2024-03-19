@@ -5,7 +5,7 @@ const Article = require('../../models/User/ArticleModel');
 
 
 // Get all articles
-router.get('/', async (req, res) => {
+router.get('/getArticles', async (req, res) => {
   try {
     const articles = await Article.find();
     res.json(articles);
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get a specific article
-router.get('/:id', getArticle, (req, res) => {
+router.get('getArticles/:id', getArticle, (req, res) => {
   res.json(res.article);
 });
 // Create a new article
