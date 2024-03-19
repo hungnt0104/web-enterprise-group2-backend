@@ -36,7 +36,7 @@ router.post('/createAccount', async(req, res) =>{
     });
 // Update Account
 router.put('/updateAccount/:id', async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name,  password, role } = req.body;
 
   try {
       const user = await UserModel.findByIdAndUpdate(req.params.id, {
@@ -84,13 +84,13 @@ router.get('/events', (req, res) => {
 
 // Function to create an event
 router.post('/createEvent', (req, res) => {
-  const { eventName, firstClosureDate } = req.body;
+  const { eventName, description, status, faculty, firstClosureDate } = req.body;
   
   // Calculate the final closure date (7 days after the first closure date)
   const finalClosureDate = new Date(firstClosureDate);
   finalClosureDate.setDate(finalClosureDate.getDate() + 7);
 
-  const newEvent = new EventModel({ eventName, closureDates: { firstClosureDate, finalClosureDate } });
+  const newEvent = new EventModel({ eventName, description, status, faculty, closureDates: { firstClosureDate, finalClosureDate } });
   newEvent.save((err, event) => {
       if (err) {
           res.status(500).send(err.message);
@@ -104,9 +104,9 @@ router.post('/createEvent', (req, res) => {
 // Function to update an event
 router.put('/updateEvent/:eventId', (req, res) => {
   const { eventId } = req.params;
-  const { eventName, closureDates } = req.body;
+  const { eventName,description, status, faculty, closureDates } = req.body;
 
-  EventModel.findByIdAndUpdate(eventId, { eventName, closureDates }, { new: true }, (err, event) => {
+  EventModel.findByIdAndUpdate(eventId, { eventName,description, status, faculty, closureDates }, { new: true }, (err, event) => {
       if (err) {
           res.status(500).send(err.message);
       } else if (!event) {
