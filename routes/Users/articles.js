@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../../models/User/ArticleModel');
+const nodemailer = require('nodemailer');
 
 
 // Get all articles
@@ -18,15 +19,53 @@ router.get('/getArticles', async (req, res) => {
 router.get('getArticles/:id', getArticle, (req, res) => {
   res.json(res.article);
 });
+
 // Create a new article
 router.post('/createArticle', async (req, res) => {
   try {
     const article = await Article.create(req.body);
     res.json(article);
-  } catch (err) {
+    // Send email notification
+    await sendEmailNotification();
+  } 
+  catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
+
+// Function to send email notification
+async function sendEmailNotification() {
+  try {
+    // Create a Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      // Specify your email service and credentials here
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure:false,
+      service: 'gmail',
+      auth: {
+        user: 'thanhtoetoe@gmail.com',
+        pass: 'eifw xlis ipxg zwif'
+      }
+    });
+
+    // Email message options
+    let mailOptions = {
+      from: 'thanhtoetoe@gmail.com',
+      to: ['nguyenthanhhung.thcneu@gmail.com'],
+      subject: 'New Idea Submission',
+      text: `A new idea has been submitted`,
+      html: '<a href="https://support.google.com/">The submission</a>'
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+    console.log('Email notification sent successfully.');
+  } catch (error) {
+    console.error('Error sending email notification:', error);
+  }
+}
+
 
 
 
