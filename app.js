@@ -12,9 +12,9 @@ const mongoose = require('mongoose')
 var bodyParser = require('body-parser');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var adminRouter = require('./routes/admin');
-var articleRouter = require('./routes/articles');
+var usersRouter = require('./routes/Users/users');
+var adminRouter = require('./routes/Admin/admin');
+var articleRouter = require('./routes/Users/articles');
 
 var app = express();
 

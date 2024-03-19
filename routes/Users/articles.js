@@ -1,17 +1,8 @@
 // routes/article.js
 const express = require('express');
 const router = express.Router();
-const Article = require('../models/ArticleModel');
+const Article = require('../../models/User/ArticleModel');
 
-// Create a new article
-router.post('/', async (req, res) => {
-  try {
-    const article = await Article.create(req.body);
-    res.json(article);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 
 // Get all articles
 router.get('/', async (req, res) => {
@@ -27,9 +18,20 @@ router.get('/', async (req, res) => {
 router.get('/:id', getArticle, (req, res) => {
   res.json(res.article);
 });
+// Create a new article
+router.post('/createArticle', async (req, res) => {
+  try {
+    const article = await Article.create(req.body);
+    res.json(article);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
 
 // Update an article
-router.patch('/:id', getArticle, async (req, res) => {
+router.patch('/updateArticle/:id', getArticle, async (req, res) => {
   if (req.body.title != null) {
     res.article.title = req.body.title;
   }
@@ -45,7 +47,7 @@ router.patch('/:id', getArticle, async (req, res) => {
 });
 
 // Delete an article
-router.delete('/:id', getArticle, async (req, res) => {
+router.delete('/deleteArticle/:id', getArticle, async (req, res) => {
   try {
     await res.article.remove();
     res.json({ message: 'Article deleted' });

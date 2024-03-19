@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const UserModel = require('../models/UserModel')
-const EventModel = require('../models/EventModel')
+const UserModel = require('../../models/Admin/UserModel')
+const EventModel = require('../../models/Admin/EventModel')
+const FacultyModel = require('../../models/Admin/FacultyModel');
 const bcrypt = require('bcryptjs')
 const jwt = require("jsonwebtoken")
 const JWT_SECRET = "group2"
@@ -131,6 +132,26 @@ router.delete('/deleteEvent/:eventId', (req, res) => {
       }
   });
 });
+
+//Faculty
+
+router.post('/createFaculty', function(req, res) {
+    // Extract data from the request body
+    var facultyData = {
+        name: req.body.name 
+    };
+
+    // Create a new faculty document using Mongoose
+    FacultyModel.create(facultyData, function(err, faculty) {
+        if (err) {
+            console.error("Error creating faculty:", err);
+            return res.status(500).json({ error: 'Error creating faculty' }); 
+        }
+        // Faculty created successfully
+        res.status(201).json(faculty); // Send the created faculty document back to the client
+    });
+});
+
 
 
 
