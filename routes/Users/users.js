@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const UserModel = require('../models/UserModel')
+const UserModel = require('../../models/Admin/UserModel')
 const bcrypt = require('bcryptjs')
 const jwt = require("jsonwebtoken")
 const JWT_SECRET = "group2"
@@ -19,16 +19,18 @@ router.post("/login", async(req, res)=>{
   }
   if(await bcrypt.compare(password, user.password)){
     const token = jwt.sign({email:user.email, userId: user._id}, JWT_SECRET, {
-      expiresIn: 10 //10s
+            expiresIn: 120 //second
     })
 
     if(res.status(201)){
-      return res.json({status: "okee", data: { token, userId: user._id }})
+      return res.json({status: "okee", data: { token, userId: user._id, role: user.role }})
     }
     else{
       return res.json({status:"error", error:"Invalid password"})
     }
   }
 })
+
+
 
 module.exports = router;
