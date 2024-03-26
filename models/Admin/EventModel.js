@@ -2,12 +2,12 @@ var mongoose = require('mongoose');
 
 // Define Event schema
 var eventSchema = new mongoose.Schema({
-    eventName: String,
+    name: String,
     description : String,
     status : String,
-    faculty : String,
+    department : String,
     closureDates: {
-        firstClosureDate: Date,
+        firstDeadline: Date,
         finalClosureDate: Date
     },
 

@@ -85,13 +85,17 @@ router.get('/events', (req, res) => {
 
 // Function to create an event
 router.post('/createEvent', (req, res) => {
-  const { eventName, description, status, faculty, firstClosureDate } = req.body;
+  const { name, description, status, department, firstDeadline } = req.body;
   
   // Calculate the final closure date (7 days after the first closure date)
-  const finalClosureDate = new Date(firstClosureDate);
+  const finalClosureDate = new Date(firstDeadline);
+    finalClosureDate.setDate(finalClosureDate.getDate() + 7);
+
+  
+//   console.log(finalClosureDate)
 //   finalClosureDate.setDate(finalClosureDate.getDate());
 
-  const newEvent = new EventModel({ eventName, description, status, faculty, closureDates: { firstClosureDate, finalClosureDate } });
+  const newEvent = new EventModel({ name, description, status, department, closureDates: { firstDeadline, finalClosureDate } });
   newEvent.save((err, event) => {
       if (err) {
           res.status(500).send(err.message);

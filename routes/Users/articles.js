@@ -66,9 +66,6 @@ async function sendEmailNotification() {
   }
 }
 
-
-
-
 // Update an article
 router.patch('/updateArticle/:id', getArticle, async (req, res) => {
   if (req.body.title != null) {
