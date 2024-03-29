@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const Article = require('../../models/User/ArticleModel');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+var path = require('path');
 
 
 // Get all articles
@@ -20,18 +22,44 @@ router.get('getArticles/:id', getArticle, (req, res) => {
   res.json(res.article);
 });
 
+
 // Create a new article
-router.post('/createArticle', async (req, res) => {
-  try {
-    const article = await Article.create(req.body);
-    res.json(article);
-    // Send email notification
-    await sendEmailNotification();
-  } 
-  catch (err) {
-    res.status(400).json({ message: err.message });
+const storage = multer.diskStorage({
+  destination: (req, file, cb ) => {
+    cb(null, 'public/Images')
+  },
+  filename:function (req, file, cb) {
+    const uniqueSuffix = Date.now();
+    cb(null, uniqueSuffix+ file.originalname)
   }
+})
+
+const upload = multer({ storage:storage
+})
+router.post('/createArticle', upload.single("image"), async (req, res) => {
+
+  const { title, content } = req.body;
+  // Extract image filename from uploaded file
+  const imageeName = req.file.filename;
+  try {
+    // Create a new article with provided details
+    const article = await Article.create({
+      title: title,
+      content: content,
+      images: imageeName // Store image filename in the article
+
+    });
+     // Send email notification
+     await sendEmailNotification();
+    res.status(201).json({ message: 'Article created successfully', article: article });
+   
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+  
 });
+
+
 
 // Function to send email notification
 async function sendEmailNotification() {

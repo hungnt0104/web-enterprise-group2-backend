@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+
+
 //cors
 const cors = require('cors')
 //mongoose
@@ -14,7 +16,7 @@ var bodyParser = require('body-parser');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/Users/users');
 var adminRouter = require('./routes/Admin/admin');
-var articleRouter = require('./routes/Users/articles');
+var articleRouter = require('./routes/Articles/articles');
 
 var app = express();
 
