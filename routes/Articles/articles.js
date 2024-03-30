@@ -18,8 +18,17 @@ router.get('/getArticles', async (req, res) => {
 });
 
 // Get a specific article
-router.get('getArticles/:id', getArticle, (req, res) => {
-  res.json(res.article);
+router.get('/getArticles/:id', async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+    res.json(article);
+  } catch (error) {
+    console.error('Error fetching article:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 
@@ -50,7 +59,7 @@ router.post('/createArticle', upload.single("image"), async (req, res) => {
 
     });
      // Send email notification
-     await sendEmailNotification();
+     await sendEmailNotification(article._id);
     res.status(201).json({ message: 'Article created successfully', article: article });
    
   } catch (error) {
@@ -62,7 +71,7 @@ router.post('/createArticle', upload.single("image"), async (req, res) => {
 
 
 // Function to send email notification
-async function sendEmailNotification() {
+async function sendEmailNotification(id) {
   try {
     // Create a Nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -76,14 +85,14 @@ async function sendEmailNotification() {
         pass: 'eifw xlis ipxg zwif'
       }
     });
-
+    const html = '<a href="http://localhost:3001/articleDetail/' + id + '">The submission</a>';
     // Email message options
     let mailOptions = {
       from: 'thanhtoetoe@gmail.com',
       to: ['nguyenthanhhung.thcneu@gmail.com'],
       subject: 'New Idea Submission',
       text: `A new idea has been submitted`,
-      html: '<a href="https://support.google.com/">The submission</a>'
+      html: html
     };
 
     // Send the email

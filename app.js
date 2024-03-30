@@ -39,6 +39,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/articles', articleRouter);
+app.use('/images', express.static(path.join(__dirname, 'public/Images')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

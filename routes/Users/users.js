@@ -17,13 +17,14 @@ router.post("/login", async(req, res)=>{
   if(!user){
     return res.json({error: "User not found"})
   }
+  // console.log(email)
   if(await bcrypt.compare(password, user.password)){
     const token = jwt.sign({email:user.email, userId: user._id}, JWT_SECRET, {
             expiresIn: 120 //second
     })
 
     if(res.status(201)){
-      return res.json({status: "okee", data: { token, userId: user._id, role: user.role }})
+      return res.json({status: "okee", data: { token, userId: user._id, role: user.role, email: email, name: user.name }})
     }
     else{
       return res.json({status:"error", error:"Invalid password"})
@@ -31,6 +32,13 @@ router.post("/login", async(req, res)=>{
   }
 })
 
+// router.get('/getProfile', async(req, res) => {
+//   const{email} = req.body
+//   const profile = await UserModel.findOne({email})
+//   if(res.status(201)){
+//     return res.json({status: "okee", data: {role: user.role, name: user.name, email: email}})
+//   }
+// });
 
 
 module.exports = router;
