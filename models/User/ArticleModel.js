@@ -10,16 +10,18 @@ const articleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  // user: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User',
-  //   required: true
-  // },
+  
   images: [{
     type: String,
     required: true // Assuming URLs will be stored as strings
     
   }],
+  pdfs: [{
+    type: String,
+    required: true // Assuming URLs will be stored as strings
+    
+  }],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // Add more article properties as needed
 });
 
