@@ -27,9 +27,9 @@ router.get('getArticles/:id', getArticle, (req, res) => {
 // Multer configuration for handling file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let destinationFolder = 'FILES/Images'; // Default destination folder
+    let destinationFolder = 'public/Images'; // Default destination folder
     if (file.mimetype.includes('pdf')) { // If file is PDF, change destination folder
-      destinationFolder = 'FILES/PDFs';
+      destinationFolder = 'public/PDFs';
     }
     cb(null, destinationFolder);
   },
