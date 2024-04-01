@@ -33,40 +33,68 @@ router.get('/getArticles/:id', async (req, res) => {
 
 
 // Create a new article
+// Multer configuration for handling file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb ) => {
-    cb(null, 'public/Images')
+  destination: (req, file, cb) => {
+    let destinationFolder = 'public/Images'; // Default destination folder
+    if (file.mimetype.includes('pdf')) { // If file is PDF, change destination folder
+      destinationFolder = 'public/PDFs';
+    }
+    cb(null, destinationFolder);
   },
-  filename:function (req, file, cb) {
+  filename: function (req, file, cb) {
     const uniqueSuffix = Date.now();
-    cb(null, uniqueSuffix+ file.originalname)
+    cb(null, uniqueSuffix + file.originalname);
   }
-})
+});
 
-const upload = multer({ storage:storage
-})
-router.post('/createArticle', upload.single("image"), async (req, res) => {
+const upload = multer({ storage: storage });
 
+// Route to handle article creation with file uploads
+router.post('/createArticle', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), async (req, res) => {
   const { title, content } = req.body;
-  // Extract image filename from uploaded file
-  const imageeName = req.file.filename;
+  const { image, pdf } = req.files;
+  //const userId = req.user._id;
+
   try {
     // Create a new article with provided details
     const article = await Article.create({
       title: title,
       content: content,
-      images: imageeName // Store image filename in the article
-
+      images: image[0].filename, // Store image filename in the article
+      pdfs: pdf[0].filename,
+      //userId: userId // Store PDF filename in the article
     });
+// <<<<<<< HEAD
      // Send email notification
      await sendEmailNotification(article._id);
+// =======
+
+    // Send email notification
+    await sendEmailNotification();
+
+// >>>>>>> 3f5e4351a5a8c445313fb970c723042dc597fb88
     res.status(201).json({ message: 'Article created successfully', article: article });
-   
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-  
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
