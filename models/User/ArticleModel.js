@@ -21,6 +21,10 @@ const articleSchema = new mongoose.Schema({
     required: true // Assuming URLs will be stored as strings
     
   }],
+  // userId: {
+  //   type: String,
+  //   required: true
+  // }
   //userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // Add more article properties as needed
 });

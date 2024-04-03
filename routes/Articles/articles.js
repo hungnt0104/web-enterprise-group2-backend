@@ -71,7 +71,7 @@ router.post('/createArticle', upload.fields([{ name: 'image', maxCount: 1 }, { n
 // =======
 
     // Send email notification
-    await sendEmailNotification();
+    // await sendEmailNotification();
 
 // >>>>>>> 3f5e4351a5a8c445313fb970c723042dc597fb88
     res.status(201).json({ message: 'Article created successfully', article: article });
@@ -80,23 +80,6 @@ router.post('/createArticle', upload.fields([{ name: 'image', maxCount: 1 }, { n
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Function to send email notification
 async function sendEmailNotification(id) {
