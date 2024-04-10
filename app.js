@@ -18,6 +18,7 @@ var usersRouter = require('./routes/Users/users');
 var adminRouter = require('./routes/Admin/admin');
 var articleRouter = require('./routes/Articles/articles');
 
+
 var app = express();
 
 //cors
@@ -39,6 +40,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/articles', articleRouter);
+
 
 app.use('/images', express.static(path.join(__dirname, 'public/Images')));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/PDFs')));

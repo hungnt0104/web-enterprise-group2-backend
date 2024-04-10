@@ -32,54 +32,63 @@ router.get('/getArticles/:id', async (req, res) => {
 });
 
 
-// Create a new article
-// Multer configuration for handling file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let destinationFolder = 'public/Images'; // Default destination folder
-    if (file.mimetype.includes('pdf')) { // If file is PDF, change destination folder
-      destinationFolder = 'public/PDFs';
+  destination: function (req, file, cb) {
+    // Determine the destination folder based on file type
+    if (file.fieldname === 'images') {
+      cb(null, 'public/Images');
+    } else if (file.fieldname === 'pdfs') {
+      cb(null, 'public/PDFs');
+    } else if (file.fieldname === 'docs') {
+      cb(null, 'public/Docs');
+    } else {
+      cb(null, 'public/Other'); // You can add more cases if needed
     }
-    cb(null, destinationFolder);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now();
-    cb(null, uniqueSuffix + file.originalname);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 
+// Initialize multer upload instance
 const upload = multer({ storage: storage });
 
-// Route to handle article creation with file uploads
-router.post('/createArticle', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), async (req, res) => {
-  const { title, content } = req.body;
-  const { image, pdf } = req.files;
-  //const userId = req.user._id;
-
+router.post('/createArticle', upload.fields([
+  { name: 'images', maxCount: 10 }, 
+  { name: 'pdfs', maxCount: 10 },
+  { name: 'docs', maxCount: 10 }
+]), async (req, res) => {
   try {
-    // Create a new article with provided details
-    const article = await Article.create({
-      title: title,
-      content: content,
-      images: image[0].filename, // Store image filename in the article
-      pdfs: pdf[0].filename,
-      //userId: userId // Store PDF filename in the article
+    // Access form fields and files using req.body and req.files
+    const { title, content } = req.body;
+    const images = req.files['images']; // Array of image files
+    const pdfs = req.files['pdfs']; // Array of pdf files
+    const docs = req.files['docs']; // Array of document files
+
+    // Create a new article object
+    const article = new Article({
+      title,
+      content,
+      images: images ? images.map(img => img.filename) : [],
+      pdfs: pdfs ? pdfs.map(pdf => pdf.filename) : [],
+      docs: docs ? docs.map(doc => doc.filename) : []
     });
-// <<<<<<< HEAD
-     // Send email notification
-     await sendEmailNotification(article._id);
-// =======
 
-    // Send email notification
-    // await sendEmailNotification();
+    // Save the article to the database
+    await article.save();
 
-// >>>>>>> 3f5e4351a5a8c445313fb970c723042dc597fb88
-    res.status(201).json({ message: 'Article created successfully', article: article });
+    // Respond with success message
+    res.status(201).json({ message: 'Article created successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating article:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+
+
 
 // Function to send email notification
 async function sendEmailNotification(id) {

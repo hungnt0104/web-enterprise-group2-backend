@@ -10,23 +10,15 @@ const articleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  
   images: [{
-    type: String,
-    required: true // Assuming URLs will be stored as strings
-    
+    type: String // Array of filenames for images
   }],
   pdfs: [{
-    type: String,
-    required: true // Assuming URLs will be stored as strings
-    
+    type: String // Array of filenames for PDFs
   }],
-  // userId: {
-  //   type: String,
-  //   required: true
-  // }
-  //userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  // Add more article properties as needed
+  docs: [{
+    type: String // Array of filenames for documents
+  }]
 });
 
 module.exports = mongoose.model('Article', articleSchema);
