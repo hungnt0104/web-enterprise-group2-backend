@@ -15,7 +15,7 @@ router.get('/', async(req, res)=>{
    })
 //Create Account
 router.post('/createAccount', async(req, res) =>{
-    const{name, email, password, role} = req.body
+    const{name, email, password, role, department} = req.body
   
     const encryptedPassword = await bcrypt.hash(password, 10) //10: do dai cua hash
 
@@ -28,7 +28,8 @@ router.post('/createAccount', async(req, res) =>{
           name,
           email,
           password: encryptedPassword, //save encrypted password vao db
-          role
+          role,
+          department
         })
         res.send({status: "ok"})
       } catch (error) {

@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../../models/User/ArticleModel');
+const UserModel = require('../../models/Admin/UserModel');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 var path = require('path');
@@ -61,7 +62,8 @@ router.post('/createArticle', upload.fields([
 ]), async (req, res) => {
   try {
     // Access form fields and files using req.body and req.files
-    const { title, content } = req.body;
+    const { title, content, department, name, email } = req.body;
+    // console.log(department)
     const images = req.files['images']; // Array of image files
     const pdfs = req.files['pdfs']; // Array of pdf files
     const docs = req.files['docs']; // Array of document files
@@ -70,6 +72,9 @@ router.post('/createArticle', upload.fields([
     const article = new Article({
       title,
       content,
+      department, 
+      name, 
+      email,
       images: images ? images.map(img => img.filename) : [],
       pdfs: pdfs ? pdfs.map(pdf => pdf.filename) : [],
       docs: docs ? docs.map(doc => doc.filename) : []
@@ -77,7 +82,11 @@ router.post('/createArticle', upload.fields([
 
     // Save the article to the database
     await article.save();
-
+    const users = await UserModel.find({ department: department, role: "Coordinator" });
+    for (const user of users) {
+      await sendEmailNotification(article._id, user.email);
+    }
+    // sendEmailNotification(id, department)
     // Respond with success message
     res.status(201).json({ message: 'Article created successfully' });
   } catch (error) {
@@ -88,10 +97,8 @@ router.post('/createArticle', upload.fields([
 
 
 
-
-
 // Function to send email notification
-async function sendEmailNotification(id) {
+async function sendEmailNotification(id, email) {
   try {
     // Create a Nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -109,7 +116,7 @@ async function sendEmailNotification(id) {
     // Email message options
     let mailOptions = {
       from: 'thanhtoetoe@gmail.com',
-      to: ['nguyenthanhhung.thcneu@gmail.com'],
+      to: [email],
       subject: 'New Idea Submission',
       text: `A new idea has been submitted`,
       html: html
@@ -122,9 +129,6 @@ async function sendEmailNotification(id) {
     console.error('Error sending email notification:', error);
   }
 }
-
-
-
 
 // Update an article
 router.patch('/updateArticle/:id', getArticle, async (req, res) => {
@@ -167,5 +171,118 @@ async function getArticle(req, res, next) {
   res.article = article;
   next();
 }
+
+//Comment function
+router.post('/commentArticle/:articleId', async (req, res) => {
+  try {
+      const { articleId } = req.params;
+      const { comment, author } = req.body;
+      // console.log(comment, author)
+
+      // Find the article by its ID
+      const article = await Article.findById(articleId);
+
+      if (!article) {
+          return res.status(404).json({ error: 'Article not found' });
+      }
+      const newComment = {
+        text: comment,
+        author: author,
+        // date: Date.now
+    };
+
+      // Add the comment to the comments array
+      article.comments.push(newComment);
+      sendCommentNotification(articleId, article.email, newComment);
+
+      // Save the updated article
+      await article.save();
+
+      res.status(201).json({ message: 'Comment added successfully' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Function to send email notification
+async function sendCommentNotification(id, email, newComment) {
+  try {
+    // Create a Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      // Specify your email service and credentials here
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure:false,
+      service: 'gmail',
+      auth: {
+        user: 'thanhtoetoe@gmail.com',
+        pass: 'eifw xlis ipxg zwif'
+      }
+    });
+    const html = '<p>' + newComment.text + '<p/><br/><a href="http://localhost:3001/articleDetail/' + id + '">Check now</a>';
+    // Email message options
+    let mailOptions = {
+      from: 'thanhtoetoe@gmail.com',
+      to: [email],
+      subject: 'New Comment to your post',
+      text: `Your post received a new comment`,
+      html: html
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+    console.log('Email notification sent successfully.');
+  } catch (error) {
+    console.error('Error sending email notification:', error);
+  }
+}
+
+router.post('/setIsSelected/:articleId', async (req, res) => {
+  try {
+    const { articleId } = req.params;
+
+    // Find the article by its ID
+    const article = await Article.findById(articleId);
+
+    if (!article) {
+        return res.status(404).json({ error: 'Article not found' });
+    }
+
+    // Update the isSelected property
+    article.isSelected = true;
+
+    // Save the updated article
+    await article.save();
+
+    res.status(200).json({ message: 'isSelected set to true successfully' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+router.post('/setIsSelectedToFalse/:articleId', async (req, res) => {
+  try {
+    const { articleId } = req.params;
+
+    // Find the article by its ID
+    const article = await Article.findById(articleId);
+
+    if (!article) {
+        return res.status(404).json({ error: 'Article not found' });
+    }
+
+    // Update the isSelected property
+    article.isSelected = false;
+
+    // Save the updated article
+    await article.save();
+
+    res.status(200).json({ message: 'isSelected set to true successfully' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 module.exports = router;

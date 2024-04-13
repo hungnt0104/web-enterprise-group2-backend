@@ -18,7 +18,36 @@ const articleSchema = new mongoose.Schema({
   }],
   docs: [{
     type: String // Array of filenames for documents
-  }]
+  }],
+      name: {
+        type: String
+    },
+    email: {
+        type: String
+    },
+    department: {
+      type: String
+  },
+  isSelected: {
+    type: Boolean, // Date of the comment
+    default: false
+},
+date:{
+  type: Date, // Date of the comment
+  default: Date.now
+},
+  comments: [{
+    text: {
+        type: String
+    },
+    author: {
+        type: String
+    },
+    date: {
+        type: Date, // Date of the comment
+        default: Date.now
+    }
+}]
 });
 
 module.exports = mongoose.model('Article', articleSchema);
