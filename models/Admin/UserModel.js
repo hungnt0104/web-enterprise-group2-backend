@@ -4,6 +4,7 @@ var UserSchema = mongoose.Schema(
   name: String,
   email: {type: String, unique: true},
   password: String,
+  department: String,
   role: String
  }
 )
