@@ -10,7 +10,7 @@ var UserSchema = mongoose.Schema(
 // =======
   role: String,
   department: String
->>>>>>> 9840d61 (Change multiple files)
+// >>>>>>> 9840d61 (Change multiple files)
  }
 )
 
