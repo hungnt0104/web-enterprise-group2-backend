@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Article = require('../../models/User/ArticleModel');
 const UserModel = require('../../models/Admin/UserModel');
+const EventModel = require('../../models/Admin/EventModel');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 var path = require('path');
@@ -62,7 +63,16 @@ router.post('/createArticle', upload.fields([
 ]), async (req, res) => {
   try {
     // Access form fields and files using req.body and req.files
-    const { title, content, department, name, email } = req.body;
+    const { title, content, department, name, email, eventId } = req.body;
+    //Handle event and deadlines
+    const eventObject = await EventModel.findById(eventId);
+
+if (!eventObject) {
+  res.status(500).json({ message: 'Event not found' });
+} else {
+  const now = new Date();
+  // console.log(eventObject.closureDates.firstDeadline , now)
+  if (eventObject.closureDates.firstDeadline > now) {
     // console.log(department)
     const images = req.files['images']; // Array of image files
     const pdfs = req.files['pdfs']; // Array of pdf files
@@ -75,6 +85,7 @@ router.post('/createArticle', upload.fields([
       department, 
       name, 
       email,
+      eventId,
       images: images ? images.map(img => img.filename) : [],
       pdfs: pdfs ? pdfs.map(pdf => pdf.filename) : [],
       docs: docs ? docs.map(doc => doc.filename) : []
@@ -89,6 +100,14 @@ router.post('/createArticle', upload.fields([
     // sendEmailNotification(id, department)
     // Respond with success message
     res.status(201).json({ message: 'Article created successfully' });
+  } else {
+    // Perform actions if the first deadline has passed
+    // For example:
+    // console.log('Deadline')
+    res.status(500).json({ message: 'The deadline was passed' });
+  }
+}
+    
   } catch (error) {
     console.error('Error creating article:', error);
     res.status(500).json({ message: 'Internal server error' });

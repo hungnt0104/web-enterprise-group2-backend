@@ -36,6 +36,9 @@ date:{
   type: Date, // Date of the comment
   default: Date.now
 },
+eventId:{
+  type: String
+},
   comments: [{
     text: {
         type: String
