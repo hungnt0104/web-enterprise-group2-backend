@@ -10,6 +10,7 @@ var logger = require('morgan');
 const cors = require('cors')
 //mongoose
 const mongoose = require('mongoose')
+mongoose.set("strictQuery", false);
 //To test on postman
 var bodyParser = require('body-parser');
 
