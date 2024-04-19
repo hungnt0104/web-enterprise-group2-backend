@@ -4,6 +4,7 @@ const router = express.Router();
 const Article = require('../../models/User/ArticleModel');
 const UserModel = require('../../models/Admin/UserModel');
 const EventModel = require('../../models/Admin/EventModel');
+const Faculty = require('../../models/Admin/FacultyModel');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 var path = require('path');
@@ -14,6 +15,32 @@ router.get('/getArticles', async (req, res) => {
   try {
     const articles = await Article.find();
     res.json(articles);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+//Statistics
+router.get('/getStatistics', async (req, res) => {
+  try {
+    const articles = await Article.find();
+    const articlesLength = articles.length;
+    const faculties = await Faculty.find();
+    const totalFaculties = faculties.length;
+    const users = await UserModel.find();
+    const totalUsers = faculties.length;
+
+    // console.log(totalFaculties)
+
+    const contributorsCount = await Article.aggregate([
+      { $group: { _id: "$email" } },
+      { $count: "totalContributors" }
+    ]);
+    // console.log(contributorsCount)
+    const totalContributors = contributorsCount.length > 0 ? contributorsCount[0].totalContributors : 0;
+    // console.log(totalContributors)
+
+    res.json({totalArticles: articlesLength, totalContributors: totalContributors, totalFaculties: totalFaculties, totalUsers: totalUsers});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -86,6 +113,7 @@ if (!eventObject) {
       name, 
       email,
       eventId,
+      date: now,
       images: images ? images.map(img => img.filename) : [],
       pdfs: pdfs ? pdfs.map(pdf => pdf.filename) : [],
       docs: docs ? docs.map(doc => doc.filename) : []

@@ -33,8 +33,7 @@ const articleSchema = new mongoose.Schema({
     default: false
 },
 date:{
-  type: Date, // Date of the comment
-  default: Date.now
+  type: Date
 },
 eventId:{
   type: String
