@@ -3,7 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+var { createServer } = require("http");
+var { Server } = require("socket.io");
 
 
 //cors
@@ -20,7 +21,28 @@ var adminRouter = require('./routes/Admin/admin');
 var articleRouter = require('./routes/Articles/articles');
 
 
+
 var app = express();
+const http = require("http");
+var app = express();
+const server = http.createServer(app);
+const socketIo = require("socket.io")(server, {
+  cors: {
+      origin: "*",
+  }
+}); 
+socketIo.on("connection", (socket) => { ///Handle khi có connect từ client tới
+  console.log("New client connected" + socket.id); 
+
+  socket.on("sendDataClient", function(data) { // Handle khi có sự kiện tên là sendDataClient từ phía client
+    socketIo.emit("sendDataServer", { data });// phát sự kiện  có tên sendDataServer cùng với dữ liệu tin nhắn từ phía server
+  })
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected"); // Khi client disconnect thì log ra terminal.
+  });
+});
+
 
 //cors
 app.use(cors())
@@ -41,6 +63,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/articles', articleRouter);
+
 
 
 app.use('/images', express.static(path.join(__dirname, 'public/Images')));
@@ -71,6 +94,9 @@ app.use(function(err, req, res, next) {
 });
 
 port = process.env.PORT || 5000
-app.listen(port)
+// app.listen(port)
 
-module.exports = app;
+// module.exports = app;
+server.listen(port, () => {
+  console.log('Server đang chay tren cong 3000');
+});
