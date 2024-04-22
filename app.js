@@ -7,6 +7,7 @@ var { createServer } = require("http");
 var { Server } = require("socket.io");
 
 
+
 //cors
 const cors = require('cors')
 //mongoose
@@ -22,15 +23,16 @@ var articleRouter = require('./routes/Articles/articles');
 
 
 
+
+
 var app = express();
 const http = require("http");
-var app = express();
 const server = http.createServer(app);
-const socketIo = require("socket.io")(server, {
-  cors: {
-      origin: "*",
-  }
-}); 
+ const socketIo = require("socket.io")(server, {
+   cors: {
+       origin: "*",
+   }
+ }); 
 socketIo.on("connection", (socket) => { ///Handle khi có connect từ client tới
   console.log("New client connected" + socket.id); 
 
@@ -42,6 +44,41 @@ socketIo.on("connection", (socket) => { ///Handle khi có connect từ client t�
     console.log("Client disconnected"); // Khi client disconnect thì log ra terminal.
   });
 });
+
+
+
+
+// const sessions = {}; // Object to store messages by session ID
+
+// socketIo.on('connection', (socket) => {
+//   console.log('New client connected');
+
+//   // Handle new connections and store session ID
+//   socket.emit('getId', socket.id);
+
+//   // Handle incoming messages
+//   socket.on('sendDataClient', (msg) => {
+//     const sessionId = msg.id; // Assuming client sends session ID along with the message
+//     const messageData = {
+//       content: msg.content,
+//       name: msg.name
+//     };
+
+//     // Store message in session
+//     if (!sessions[sessionId]) {
+//       sessions[sessionId] = [];
+//     }
+//     sessions[sessionId].push(messageData);
+
+//     // Broadcast message to all clients
+//     socketIo.emit('sendDataServer', { data: messageData });
+//   });
+
+//   // Handle disconnection
+//   socket.on('disconnect', () => {
+//     console.log('Client disconnected');
+//   });
+// });
 
 
 //cors
