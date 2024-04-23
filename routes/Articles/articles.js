@@ -19,28 +19,85 @@ router.get('/getArticles', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+//Get selected articles
+router.get('/getSelectedArticles', async (req, res) => {
+  try {
+    const articles = await Article.find({ isSelected: true });
+    res.json(articles);
+    // console.log(articles)
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 //Statistics
 router.get('/getStatistics', async (req, res) => {
   try {
     const articles = await Article.find();
+
+    // Count the number of articles in each department
+    const departmentCounts = await Article.aggregate([
+      { $group: { _id: "$department", count: { $sum: 1 } } }
+    ]);
+    
+    const contributorsPerFaculty = await Article.aggregate([
+      {
+        $group: {
+          _id: "$department", // Group by department
+          authorsCount: { $addToSet: "$email" } // Add unique emails to set for each department
+        }
+      },
+      {
+        $project: {
+          _id: 0, // Exclude the default _id field
+          department: "$_id", // Rename _id to department
+          numberOfAuthors: { $size: "$authorsCount" } // Calculate the size of the authorsCount array to get the number of authors
+        }
+      }
+    ]);
+
+    // console.log(contributorsPerFaculty)
+
     const articlesLength = articles.length;
     const faculties = await Faculty.find();
     const totalFaculties = faculties.length;
     const users = await UserModel.find();
-    const totalUsers = faculties.length;
-
-    // console.log(totalFaculties)
+    const totalUsers = users.length;
 
     const contributorsCount = await Article.aggregate([
       { $group: { _id: "$email" } },
       { $count: "totalContributors" }
     ]);
-    // console.log(contributorsCount)
     const totalContributors = contributorsCount.length > 0 ? contributorsCount[0].totalContributors : 0;
-    // console.log(totalContributors)
 
-    res.json({totalArticles: articlesLength, totalContributors: totalContributors, totalFaculties: totalFaculties, totalUsers: totalUsers});
+    const articlesByMonth = await Article.aggregate([
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } }, // Group by month and year
+          count: { $sum: 1 }, // Count the number of articles
+          contributors: { $addToSet: "$email" } // Collect unique contributors
+        }
+      },
+      {
+        $project: {
+          month: "$_id.month",
+          year: "$_id.year", // Project the year
+          count: 1,
+          contributors: { $size: "$contributors" } // Count the number of unique contributors
+        }
+      },
+      { $sort: { year: 1, month: 1 } } // Sort by year and month
+    ]);
+
+    res.json({
+      totalArticles: articlesLength,
+      totalContributors: totalContributors,
+      totalFaculties: totalFaculties,
+      totalUsers: totalUsers,
+      departmentCounts: departmentCounts, // Add department counts to response
+      articlesByMonth: articlesByMonth,
+      contributorsPerFaculty: contributorsPerFaculty
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -6,6 +6,7 @@ var eventSchema = new mongoose.Schema({
     description : String,
     status : String,
     department : String,
+    startDate: Date,
     closureDates: {
         firstDeadline: Date,
         finalClosureDate: Date

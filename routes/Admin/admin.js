@@ -24,6 +24,9 @@ router.post('/createAccount', async(req, res) =>{
         if(oldUser){
           return res.json({ error : "Email Exists"})
         }
+        if (role == "Admin" || role == "Manager"){
+            department = "null"
+        }
         await UserModel.create({
           name,
           email,
@@ -38,13 +41,19 @@ router.post('/createAccount', async(req, res) =>{
     });
 // Update Account
 router.put('/updateAccount/:id', async (req, res) => {
-  const { name,  password, role } = req.body;
-
+  let { name,  password, role, department } = req.body;
+  const encryptedPassword = await bcrypt.hash(password, 10)
   try {
+        if (role == "Admin" || role == "Manager"){
+            // console.log(role, department)
+            department = "null"
+            // console.log(role, department)
+        }
       const user = await UserModel.findByIdAndUpdate(req.params.id, {
           name,
-          password,
-          role
+          password : encryptedPassword,
+          role, 
+          department
       }, { new: true });
 
       if (!user) {
@@ -84,19 +93,48 @@ router.get('/events', (req, res) => {
     });
 });
 
+router.get('/currentEvent', (req, res) => {
+    EventModel.find({}, (err, events) => {
+        if (err) {
+            res.status(500).send(err.message);
+        } else {
+            if (events.length > 0) {
+                const finalEvent = events[events.length - 1]; // Get the last event in the array
+                console.log(finalEvent)
+                res.status(200).json(finalEvent);
+            } else {
+                res.status(404).send('No events found');
+            }
+        }
+    });
+});
+
+router.get('/getEvent/:id', async (req, res) => {
+    try {
+      const event = await EventModel.findById(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      res.json(event);
+    } catch (error) {
+      console.error('Error fetching article:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 // Function to create an event
 router.post('/createEvent', (req, res) => {
-  const { name, description, status, department, firstDeadline } = req.body;
+  const { name, description, status, department, startDate, firstDeadline } = req.body;
   
   // Calculate the final closure date (7 days after the first closure date)
   const finalClosureDate = new Date(firstDeadline);
-  finalClosureDate.setDate(finalClosureDate.getDate() + 7);
+  finalClosureDate.setDate(finalClosureDate.getDate() + 14);
 
 //   console.log(firstDeadline,finalClosureDate)
 //   console.log(req.body)
 //   finalClosureDate.setDate(finalClosureDate.getDate());
 
-  const newEvent = new EventModel({ name, description, status, department, closureDates: { firstDeadline, finalClosureDate } });
+  const newEvent = new EventModel({ name, description, status, department, startDate, closureDates: { firstDeadline, finalClosureDate } });
   newEvent.save((err, event) => {
       if (err) {
           res.status(500).send(err.message);
@@ -110,9 +148,12 @@ router.post('/createEvent', (req, res) => {
 // Function to update an event
 router.put('/updateEvent/:eventId', (req, res) => {
   const { eventId } = req.params;
-  const { eventName,description, status, faculty, closureDates } = req.body;
+  const { name, description, status, department, startDate, firstDeadline } = req.body;
+    console.log(name, description, status, department, startDate, firstDeadline)
+  const finalClosureDate = new Date(firstDeadline);
+  finalClosureDate.setDate(finalClosureDate.getDate() + 14);
 
-  EventModel.findByIdAndUpdate(eventId, { eventName,description, status, faculty, closureDates }, { new: true }, (err, event) => {
+  EventModel.findByIdAndUpdate(eventId, { name, description, status, startDate, closureDates: { firstDeadline, finalClosureDate } }, { new: true }, (err, event) => {
       if (err) {
           res.status(500).send(err.message);
       } else if (!event) {
