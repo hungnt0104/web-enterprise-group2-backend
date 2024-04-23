@@ -1,84 +1,229 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var { createServer } = require("http");
-var { Server } = require("socket.io");
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const { Server } = require("socket.io");
+const cors = require('cors');
+const http = require("http");
+const Message = require('./models/User/MessageModel');
 
-
-
-//cors
-const cors = require('cors')
 //mongoose
 const mongoose = require('mongoose')
 mongoose.set("strictQuery", false);
 //To test on postman
-var bodyParser = require('body-parser');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/Users/users');
-var adminRouter = require('./routes/Admin/admin');
-var articleRouter = require('./routes/Articles/articles');
+const bodyParser = require('body-parser');
 
 
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/Users/users');
+const adminRouter = require('./routes/Admin/admin');
+const articleRouter = require('./routes/Articles/articles');
+const SaveMessage = require('./routes/Users/SaveMessage');
+const GetMessage = require('./routes/Users/GetMessage');
 
+const app = express();
 
+// // Config Socket.io
+// const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: 'http://localhost:3000',
+//     methods: ['GET', 'POST'],
+//   },
+// });
 
-var app = express();
-const http = require("http");
+// const CHAT_BOT = 'ChatBot';
+// const usersInRooms = {};
+
+// io.on('connection', (socket) => {
+//   console.log(`User connected ${socket.id}`);
+
+//   // Listen for 'join_room' event
+//   socket.on('join_room', async (data) => {
+//     const { userId, name, department, email } = data;
+
+//     // Check if userId already exists in the room
+//     if (usersInRooms[department] && usersInRooms[department].includes(userId)) {
+//       // User with the same userId already exists in the room
+//       socket.emit('join_room_error', { message: 'User with the same userId is already in the room.' });
+//       return;
+//     }
+
+//     // Join the user to the room
+//     socket.join(department);
+
+//     // Store the userId in the usersInRooms object
+//     if (!usersInRooms[department]) {
+//       usersInRooms[department] = [];
+//     }
+//     usersInRooms[department].push(userId);
+
+//     // Emit updated list of users in the department to all users in the room
+//     io.to(department).emit('chatroom_users', usersInRooms[department]);
+
+//     // Send welcome message to all users in the room
+//     let createdTime = Date.now();
+//     io.to(department).emit('receive_message', {
+//       message: `${name} has joined the chat room`,
+//       username: CHAT_BOT,
+//       createdTime,
+//     });
+
+//     // Send last 100 messages to the user who just joined
+//     try {
+//       const last100Messages = await GetMessage(department);
+//       socket.emit('last_100_messages', last100Messages);
+//     } catch (error) {
+//       console.error('Error fetching last 100 messages:', error);
+//     }
+//   });
+
+//   // Listen for 'send_message' event
+//   socket.on('send_message', async (data) => {
+//     const { name, email, department, message, createdTime } = data;
+//     io.in(department).emit('receive_message', data); // Send to all users in room, including sender
+//     try {
+//       await SaveMessage(name, email, department, message, createdTime); // Save message in db
+//     } catch (err) {
+//       console.error('Error saving message:', err);
+//     }
+//   });
+
+//   // Listen for 'leave_room' event
+//   socket.on('leave_room', ({ userId, department }) => {
+//     // Remove the user from the room's user list
+//     if (usersInRooms[department]) {
+//       usersInRooms[department] = usersInRooms[department].filter((user) => user !== userId);
+//     }
+
+//     // Emit an event to notify other users in the room about the departure
+//     socket.to(department).emit('user_left', { userId });
+
+//     // Leave the room
+//     socket.leave(department);
+//   });
+
+//   // Disconnect event handler
+//   socket.on('disconnect', () => {
+//     console.log(`User disconnected ${socket.id}`);
+    
+//     // Loop through all rooms
+//     for (const room in usersInRooms) {
+//       if (usersInRooms.hasOwnProperty(room)) {
+//         // Remove the disconnected user from all rooms
+//         usersInRooms[room] = usersInRooms[room].filter((user) => user.socketId !== socket.id);
+//         // Notify other users in the room about the user's disconnection
+//         io.to(room).emit('user_left', { userId: socket.id });
+//       }
+//     }
+//   });
+// });
+// Config Socket.io
 const server = http.createServer(app);
- const socketIo = require("socket.io")(server, {
-   cors: {
-       origin: "*",
-   }
- }); 
-socketIo.on("connection", (socket) => { ///Handle khi có connect từ client tới
-  console.log("New client connected" + socket.id); 
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+  },
+});
 
-  socket.on("sendDataClient", function(data) { // Handle khi có sự kiện tên là sendDataClient từ phía client
-    socketIo.emit("sendDataServer", { data });// phát sự kiện  có tên sendDataServer cùng với dữ liệu tin nhắn từ phía server
-  })
+const CHAT_BOT = 'ChatBot';
+const usersInRooms = {};
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected"); // Khi client disconnect thì log ra terminal.
+io.on('connection', (socket) => {
+  console.log(`User connected ${socket.id}`);
+
+  // Listen for 'join_room' event
+  socket.on('join_room', async (data) => {
+    const { userId, name, department, email } = data;
+
+    // Check if userId already exists in the room
+    if (usersInRooms[department] && usersInRooms[department].includes(userId)) {
+      // User with the same userId already exists in the room
+      socket.emit('join_room_error', { message: 'User with the same userId is already in the room.' });
+      return;
+    }
+
+    // Join the user to the room
+    socket.join(department);
+
+    // Store the userId in the usersInRooms object
+    if (!usersInRooms[department]) {
+      usersInRooms[department] = [];
+    }
+    usersInRooms[department].push({ userId, socketId: socket.id, name, email });
+
+    // Emit updated list of users in the department to all users in the room
+    io.to(department).emit('chatroom_users', usersInRooms[department]);
+
+    // Send welcome message to all users in the room
+    let createdTime = Date.now();
+    io.to(department).emit('receive_message', {
+      message: `${name} has joined the chat room`,
+      username: CHAT_BOT,
+      createdTime,
+    });
+
+    // Send last 100 messages to the user who just joined
+    try {
+      const last100Messages = await GetMessage(department);
+      socket.emit('last_100_messages', last100Messages);
+    } catch (error) {
+      console.error('Error fetching last 100 messages:', error);
+    }
+  });
+
+  // Listen for 'send_message' event
+  socket.on('send_message', async (data) => {
+    const { name, email, department, message, createdTime } = data;
+    io.in(department).emit('receive_message', data); // Send to all users in room, including sender
+    try {
+      await SaveMessage(name, email, department, message, createdTime); // Save message in db
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
+  });
+
+  // Listen for 'leave_room' event
+  socket.on('leave_room', ({ userId, department }) => {
+    // Remove the user from the room's user list
+    if (usersInRooms[department]) {
+      usersInRooms[department] = usersInRooms[department].filter((user) => user.userId !== userId);
+    }
+
+    // Emit an event to notify other users in the room about the departure
+    socket.to(department).emit('user_left', { userId });
+
+    // Leave the room
+    socket.leave(department);
+  });
+
+  // Disconnect event handler
+  socket.on('disconnect', () => {
+    console.log(`User disconnected ${socket.id}`);
+    
+    // Loop through all rooms
+    for (const room in usersInRooms) {
+      if (usersInRooms.hasOwnProperty(room)) {
+        // Remove the disconnected user from all rooms
+        usersInRooms[room] = usersInRooms[room].filter((user) => user.socketId !== socket.id);
+        // Notify other users in the room about the user's disconnection
+        io.to(room).emit('user_left', { userId: socket.id });
+        // Notify other users in the room about the user's disconnection
+        let user = usersInRooms[room].find(user => user.socketId === socket.id);
+        if(user){
+          io.to(room).emit('receive_message', {
+            message: `${user.name} has left the chat room`,
+            username: CHAT_BOT,
+            createdTime: Date.now(),
+          });
+        }
+      }
+    }
   });
 });
 
-
-
-
-// const sessions = {}; // Object to store messages by session ID
-
-// socketIo.on('connection', (socket) => {
-//   console.log('New client connected');
-
-//   // Handle new connections and store session ID
-//   socket.emit('getId', socket.id);
-
-//   // Handle incoming messages
-//   socket.on('sendDataClient', (msg) => {
-//     const sessionId = msg.id; // Assuming client sends session ID along with the message
-//     const messageData = {
-//       content: msg.content,
-//       name: msg.name
-//     };
-
-//     // Store message in session
-//     if (!sessions[sessionId]) {
-//       sessions[sessionId] = [];
-//     }
-//     sessions[sessionId].push(messageData);
-
-//     // Broadcast message to all clients
-//     socketIo.emit('sendDataServer', { data: messageData });
-//   });
-
-//   // Handle disconnection
-//   socket.on('disconnect', () => {
-//     console.log('Client disconnected');
-//   });
-// });
 
 
 //cors
@@ -134,6 +279,4 @@ port = process.env.PORT || 5000
 // app.listen(port)
 
 // module.exports = app;
-server.listen(port, () => {
-  console.log('Server đang chay tren cong 3000');
-});
+server.listen(port, () => 'Server is running on port 5000');

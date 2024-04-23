@@ -178,46 +178,75 @@ async function sendEmailNotification(id, email) {
 }
 
 // Update an article
-router.patch('/updateArticle/:id', getArticle, async (req, res) => {
-  if (req.body.title != null) {
-    res.article.title = req.body.title;
-  }
-  if (req.body.content != null) {
-    res.article.content = req.body.content;
-  }
+router.put('/updateArticle/:id', upload.fields([
+  { name: 'images', maxCount: 10 }, 
+  { name: 'pdfs', maxCount: 10 },
+  { name: 'docs', maxCount: 10 }
+]), async (req, res) => {
   try {
-    const updatedArticle = await res.article.save();
-    res.json(updatedArticle);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Delete an article
-router.delete('/deleteArticle/:id', getArticle, async (req, res) => {
-  try {
-    await res.article.remove();
-    res.json({ message: 'Article deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Middleware function to get article by ID
-async function getArticle(req, res, next) {
-  let article;
-  try {
-    article = await Article.findById(req.params.id);
-    if (article == null) {
-      return res.status(404).json({ message: 'Cannot find article' });
+    const { title, content, department, name, email, eventId } = req.body;
+    const { id } = req.params;
+    const now = new Date();
+    
+    const article = await Article.findById(id);
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
     }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+    
+    // You may want to check if the user has permission to update the article
+    
+    const eventObject = await EventModel.findById(eventId);
+    if (!eventObject) {
+      return res.status(500).json({ message: 'Event not found' });
+    } else if (eventObject.closureDates.firstDeadline <= now) {
+      return res.status(500).json({ message: 'The deadline has passed' });
+    }
+    
+    const images = req.files['images'];
+    const pdfs = req.files['pdfs'];
+    const docs = req.files['docs'];
+    
+    const updatedArticle = {
+      title,
+      content,
+      department, 
+      name, 
+      email,
+      eventId,
+      date: now,
+      images: images ? images.map(img => img.filename) : article.images,
+      pdfs: pdfs ? pdfs.map(pdf => pdf.filename) : article.pdfs,
+      docs: docs ? docs.map(doc => doc.filename) : article.docs
+    };
+    
+    const updated = await Article.findByIdAndUpdate(id, updatedArticle, { new: true });
+    
+    res.status(200).json({ message: 'Article updated successfully', article: updated });
+  } catch (error) {
+    console.error('Error updating article:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
+});
 
-  res.article = article;
-  next();
-}
+// Delete article
+router.delete('/deleteArticle/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const article = await Article.findById(id);
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+    
+    // You may want to check if the user has permission to delete the article
+    
+    await Article.findByIdAndDelete(id);
+    
+    res.status(200).json({ message: 'Article deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 //Comment function
 router.post('/commentArticle/:articleId', async (req, res) => {

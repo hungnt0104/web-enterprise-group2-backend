@@ -33,13 +33,5 @@ router.post("/login", async(req, res)=>{
   }
 })
 
-// router.get('/getProfile', async(req, res) => {
-//   const{email} = req.body
-//   const profile = await UserModel.findOne({email})
-//   if(res.status(201)){
-//     return res.json({status: "okee", data: {role: user.role, name: user.name, email: email}})
-//   }
-// });
-
 
 module.exports = router;
