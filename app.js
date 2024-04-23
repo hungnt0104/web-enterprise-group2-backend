@@ -28,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3001',
     methods: ['GET', 'POST'],
   },
 });
@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
 
 
 //cors
-app.use(cors())
+app.use(cors(io))
 mongoose.connect("mongodb+srv://nguyenthanhhungthcneu:GQl4XwL687XLQjBy@cluster0.wqgufee.mongodb.net/WebProject")
 .then(()=>console.log("ok"))
 
@@ -185,3 +185,4 @@ port = process.env.PORT || 5000
 
 // module.exports = app;
 server.listen(port, () => 'Server is running on port 5000');
+module.exports = app
