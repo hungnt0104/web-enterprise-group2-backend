@@ -150,7 +150,7 @@ const storage = multer.diskStorage({
     } else if (file.fieldname === 'docs') {
       cb(null, 'public/Docs');
     } else {
-      cb(null, 'public/Other'); // You can add more cases if needed
+      cb(null, 'public/Other'); 
     }
   },
   filename: function (req, file, cb) {
@@ -208,9 +208,7 @@ if (!eventObject) {
     // Respond with success message
     res.status(201).json({ message: 'Article created successfully' });
   } else {
-    // Perform actions if the first deadline has passed
-    // For example:
-    // console.log('Deadline')
+    
     res.status(500).json({ message: 'The deadline was passed' });
   }
 }

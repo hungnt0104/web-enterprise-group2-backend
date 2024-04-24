@@ -11,13 +11,13 @@ const articleSchema = new mongoose.Schema({
     required: true
   },
   images: [{
-    type: String // Array of filenames for images
+    type: String 
   }],
   pdfs: [{
-    type: String // Array of filenames for PDFs
+    type: String 
   }],
   docs: [{
-    type: String // Array of filenames for documents
+    type: String 
   }],
       name: {
         type: String
@@ -29,7 +29,7 @@ const articleSchema = new mongoose.Schema({
       type: String
   },
   isSelected: {
-    type: Boolean, // Date of the comment
+    type: Boolean, 
     default: false
 },
 date:{
@@ -46,7 +46,7 @@ eventId:{
         type: String
     },
     date: {
-        type: Date, // Date of the comment
+        type: Date, 
         default: Date.now
     }
 }]
