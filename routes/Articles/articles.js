@@ -30,6 +30,28 @@ router.get('/getSelectedArticles', async (req, res) => {
   }
 });
 
+//Get current selected articles
+router.get('/getCurrentSelectedArticles/:id', async (req, res) => {
+  try {
+    // console.log(req.params.id)
+    const articles = await Article.find({ isSelected: true, eventId: req.params.id });
+    res.json(articles);
+    // console.log(articles)
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+//Get my articles
+router.get('/getMyArticle/:id', async (req, res) => {
+  try {
+    const articles = await Article.find({ email: req.params.id });
+    res.json(articles);
+    // console.log(articles)
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 //Statistics
 router.get('/getStatistics', async (req, res) => {
   try {
@@ -258,10 +280,12 @@ router.put('/updateArticle/:id', upload.fields([
     } else if (eventObject.closureDates.firstDeadline <= now) {
       return res.status(500).json({ message: 'The deadline has passed' });
     }
+
+    console.log(req.body)
     
-    const images = req.files['images'];
-    const pdfs = req.files['pdfs'];
-    const docs = req.files['docs'];
+    const images = req.body.images;
+    const pdfs = req.body.pdfs;
+    const docs = req.body.docs;
     
     const updatedArticle = {
       title,
@@ -309,7 +333,9 @@ router.delete('/deleteArticle/:id', async (req, res) => {
 router.post('/commentArticle/:articleId', async (req, res) => {
   try {
       const { articleId } = req.params;
-      const { comment, author } = req.body;
+      const { comment, author, finalDeadline } = req.body;
+      const now = new Date();
+      const finalDeadlineDate = new Date(finalDeadline);
       // console.log(comment, author)
 
       // Find the article by its ID
@@ -318,13 +344,22 @@ router.post('/commentArticle/:articleId', async (req, res) => {
       if (!article) {
           return res.status(404).json({ error: 'Article not found' });
       }
+
+      if (now > finalDeadlineDate) {
+        // If current time (now) is greater than the final deadline
+        console.log("Final deadline was passed");
+        return res.status(500).json({ error: 'Final deadline was passed' });
+      } else {
+        // If the final deadline has not passed
+        console.log("Final deadline has not passed yet");
+      }
+
       const newComment = {
         text: comment,
         author: author,
         // date: Date.now
     };
 
-      // Add the comment to the comments array
       article.comments.push(newComment);
       sendCommentNotification(articleId, article.email, newComment);
 

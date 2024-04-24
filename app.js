@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
 
 
 //cors
-app.use(cors(io))
+app.use(cors())
 mongoose.connect("mongodb+srv://nguyenthanhhungthcneu:GQl4XwL687XLQjBy@cluster0.wqgufee.mongodb.net/WebProject")
 .then(()=>console.log("ok"))
 

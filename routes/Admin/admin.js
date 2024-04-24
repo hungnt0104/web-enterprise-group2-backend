@@ -15,16 +15,19 @@ router.get('/', async(req, res)=>{
    })
 //Create Account
 router.post('/createAccount', async(req, res) =>{
-    const{name, email, password, role, department} = req.body
+    let{name, email, password, role, department} = req.body
   
     const encryptedPassword = await bcrypt.hash(password, 10) //10: do dai cua hash
 
     try {
         const oldUser = await UserModel.findOne({email})
+        // console.log(name, email, password, role, department)
+        // console.log(oldUser)
         if(oldUser){
           return res.json({ error : "Email Exists"})
         }
         if (role == "Admin" || role == "Manager"){
+            console.log(role)
             department = "null"
         }
         await UserModel.create({
