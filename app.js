@@ -27,8 +27,12 @@ const app = express();
 // Config Socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
+  // cors: {
+  //   origin: 'http://localhost:3000',
+  //   methods: ['GET', 'POST'],
+  // },
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'https://web-enterprise-group2-frontend-test2.onrender.com',
     methods: ['GET', 'POST'],
   },
 });
