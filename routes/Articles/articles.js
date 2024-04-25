@@ -29,6 +29,16 @@ router.get('/getSelectedArticles', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+//Get faculty articles
+router.get('/getFacultyArticles/:id', async (req, res) => {
+  try {
+    const articles = await Article.find({ department: req.params.id });
+    res.json(articles);
+    // console.log(articles)
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 //Get current selected articles
 router.get('/getCurrentSelectedArticles/:id', async (req, res) => {
@@ -272,18 +282,18 @@ router.put('/updateArticle/:id', upload.fields([
     
     // You may want to check if the user has permission to update the article
     
-    const eventObject = await EventModel.findById(eventId);
-    if (!eventObject) {
-      return res.status(500).json({ message: 'Event not found' });
-    } else if (eventObject.closureDates.firstDeadline <= now) {
-      return res.status(500).json({ message: 'The deadline has passed' });
-    }
+    // const eventObject = await EventModel.findById(eventId);
+    // if (!eventObject) {
+    //   return res.status(500).json({ message: 'Event not found' });
+    // } else if (eventObject.closureDates.firstDeadline <= now) {
+    //   return res.status(500).json({ message: 'The deadline has passed' });
+    // }
 
-    console.log(req.body)
+    console.log(req.files['images'])
     
-    const images = req.body.images;
-    const pdfs = req.body.pdfs;
-    const docs = req.body.docs;
+    const images = req.files['images'];
+    const pdfs = req.files['pdfs'];
+    const docs = req.files['docs'];
     
     const updatedArticle = {
       title,
