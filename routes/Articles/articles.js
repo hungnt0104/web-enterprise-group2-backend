@@ -24,7 +24,6 @@ router.get('/getSelectedArticles', async (req, res) => {
   try {
     const articles = await Article.find({ isSelected: true });
     res.json(articles);
-    // console.log(articles)
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -56,7 +55,6 @@ router.get('/getMyArticle/:id', async (req, res) => {
   try {
     const articles = await Article.find({ email: req.params.id });
     res.json(articles);
-    // console.log(articles)
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -88,8 +86,6 @@ router.get('/getStatistics', async (req, res) => {
       }
     ]);
 
-    // console.log(contributorsPerFaculty)
-
     const articlesLength = articles.length;
     const faculties = await Faculty.find();
     const totalFaculties = faculties.length;
@@ -115,10 +111,10 @@ router.get('/getStatistics', async (req, res) => {
           month: "$_id.month",
           year: "$_id.year", // Project the year
           count: 1,
-          contributors: { $size: "$contributors" } // Count the number of unique contributors
+          contributors: { $size: "$contributors" } 
         }
       },
-      { $sort: { year: 1, month: 1 } } // Sort by year and month
+      { $sort: { year: 1, month: 1 } }
     ]);
 
     res.json({
@@ -126,7 +122,7 @@ router.get('/getStatistics', async (req, res) => {
       totalContributors: totalContributors,
       totalFaculties: totalFaculties,
       totalUsers: totalUsers,
-      departmentCounts: departmentCounts, // Add department counts to response
+      departmentCounts: departmentCounts,
       articlesByMonth: articlesByMonth,
       contributorsPerFaculty: contributorsPerFaculty
     });
@@ -169,7 +165,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// Initialize multer upload instance
 const upload = multer({ storage: storage });
 
 router.post('/createArticle', upload.fields([
@@ -187,7 +182,6 @@ if (!eventObject) {
   res.status(500).json({ message: 'Event not found' });
 } else {
   const now = new Date();
-  // console.log(eventObject.closureDates.firstDeadline , now)
   if (eventObject.closureDates.firstDeadline > now) {
     // console.log(department)
     const images = req.files['images']; // Array of image files
@@ -208,14 +202,11 @@ if (!eventObject) {
       docs: docs ? docs.map(doc => doc.filename) : []
     });
 
-    // Save the article to the database
     await article.save();
     const users = await UserModel.find({ department: department, role: "Coordinator" });
     for (const user of users) {
       await sendEmailNotification(article._id, user.email);
     }
-    // sendEmailNotification(id, department)
-    // Respond with success message
     res.status(201).json({ message: 'Article created successfully' });
   } else {
     
@@ -246,7 +237,7 @@ async function sendEmailNotification(id, email) {
         pass: 'eifw xlis ipxg zwif'
       }
     });
-    const html = '<a href="http://localhost:3001/articleDetail/' + id + '">The submission</a>';
+    const html = '<a href="https://web-enterprise-group2-frontend-test2.onrender.com/' + id + '">The submission</a>';
     // Email message options
     let mailOptions = {
       from: 'thanhtoetoe@gmail.com',
@@ -280,7 +271,6 @@ router.put('/updateArticle/:id', upload.fields([
       return res.status(404).json({ message: 'Article not found' });
     }
     
-    // You may want to check if the user has permission to update the article
     
     // const eventObject = await EventModel.findById(eventId);
     // if (!eventObject) {
@@ -326,8 +316,6 @@ router.delete('/deleteArticle/:id', async (req, res) => {
       return res.status(404).json({ message: 'Article not found' });
     }
     
-    // You may want to check if the user has permission to delete the article
-    
     await Article.findByIdAndDelete(id);
     
     res.status(200).json({ message: 'Article deleted successfully' });
@@ -344,7 +332,6 @@ router.post('/commentArticle/:articleId', async (req, res) => {
       const { comment, author, finalDeadline } = req.body;
       const now = new Date();
       const finalDeadlineDate = new Date(finalDeadline);
-      // console.log(comment, author)
 
       // Find the article by its ID
       const article = await Article.findById(articleId);
@@ -365,13 +352,11 @@ router.post('/commentArticle/:articleId', async (req, res) => {
       const newComment = {
         text: comment,
         author: author,
-        // date: Date.now
     };
 
       article.comments.push(newComment);
       sendCommentNotification(articleId, article.email, newComment);
 
-      // Save the updated article
       await article.save();
 
       res.status(201).json({ message: 'Comment added successfully' });
@@ -396,7 +381,7 @@ async function sendCommentNotification(id, email, newComment) {
         pass: 'eifw xlis ipxg zwif'
       }
     });
-    const html = '<p>' + newComment.text + '<p/><br/><a href="http://localhost:3001/articleDetail/' + id + '">Check now</a>';
+    const html = '<p>' + newComment.text + '<p/><br/><a href="https://web-enterprise-group2-frontend-test2.onrender.com/' + id + '">Check now</a>';
     // Email message options
     let mailOptions = {
       from: 'thanhtoetoe@gmail.com',
@@ -418,19 +403,13 @@ router.post('/setIsSelected/:articleId', async (req, res) => {
   try {
     const { articleId } = req.params;
 
-    // Find the article by its ID
     const article = await Article.findById(articleId);
 
     if (!article) {
         return res.status(404).json({ error: 'Article not found' });
     }
-
-    // Update the isSelected property
     article.isSelected = true;
-
-    // Save the updated article
     await article.save();
-
     res.status(200).json({ message: 'isSelected set to true successfully' });
   } catch (error) {
       console.error(error);
@@ -440,20 +419,13 @@ router.post('/setIsSelected/:articleId', async (req, res) => {
 router.post('/setIsSelectedToFalse/:articleId', async (req, res) => {
   try {
     const { articleId } = req.params;
-
-    // Find the article by its ID
     const article = await Article.findById(articleId);
 
     if (!article) {
         return res.status(404).json({ error: 'Article not found' });
     }
-
-    // Update the isSelected property
     article.isSelected = false;
-
-    // Save the updated article
     await article.save();
-
     res.status(200).json({ message: 'isSelected set to true successfully' });
   } catch (error) {
       console.error(error);

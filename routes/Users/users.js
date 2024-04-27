@@ -12,13 +12,10 @@ router.get('/', function(req, res, next) {
 
 router.post("/login", async(req, res)=>{
   const{email, password} = req.body
-  // console.log(req.body)
   const user = await UserModel.findOne({email})
-  // console.log(user)
   if(!user){
     return res.json({error: "User not found"})
   }
-  // console.log(email)
   if(await bcrypt.compare(password, user.password)){
     const token = jwt.sign({email:user.email, userId: user._id}, JWT_SECRET, {
             expiresIn: 3600 //second

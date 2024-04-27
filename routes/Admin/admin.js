@@ -17,12 +17,10 @@ router.get('/', async(req, res)=>{
 router.post('/createAccount', async(req, res) =>{
     let{name, email, password, role, department} = req.body
   
-    const encryptedPassword = await bcrypt.hash(password, 10) //10: do dai cua hash
+    const encryptedPassword = await bcrypt.hash(password, 10) 
 
     try {
         const oldUser = await UserModel.findOne({email})
-        // console.log(name, email, password, role, department)
-        // console.log(oldUser)
         if(oldUser){
           return res.json({ error : "Email Exists"})
         }
@@ -33,7 +31,7 @@ router.post('/createAccount', async(req, res) =>{
         await UserModel.create({
           name,
           email,
-          password: encryptedPassword, //save encrypted password vao db
+          password: encryptedPassword, 
           role,
           department
         })
@@ -42,15 +40,13 @@ router.post('/createAccount', async(req, res) =>{
         res.send({status: "error"})
       }
     });
-// Update Account
+
 router.put('/updateAccount/:id', async (req, res) => {
   let { name,  password, role, department } = req.body;
   const encryptedPassword = await bcrypt.hash(password, 10)
   try {
         if (role == "Admin" || role == "Manager"){
-            // console.log(role, department)
             department = "null"
-            // console.log(role, department)
         }
       const user = await UserModel.findByIdAndUpdate(req.params.id, {
           name,
@@ -129,13 +125,8 @@ router.get('/getEvent/:id', async (req, res) => {
 router.post('/createEvent', (req, res) => {
   const { name, description, status, department, startDate, firstDeadline } = req.body;
   
-  // Calculate the final closure date (7 days after the first closure date)
   const finalClosureDate = new Date(firstDeadline);
   finalClosureDate.setDate(finalClosureDate.getDate() + 14);
-
-//   console.log(firstDeadline,finalClosureDate)
-//   console.log(req.body)
-//   finalClosureDate.setDate(finalClosureDate.getDate());
 
   const newEvent = new EventModel({ name, description, status, department, startDate, closureDates: { firstDeadline, finalClosureDate } });
   newEvent.save((err, event) => {
@@ -190,19 +181,16 @@ router.get('/faculty', async(req, res)=>{
    })
 
 router.post('/createFaculty', function(req, res) {
-    // Extract data from the request body
     var facultyData = {
         name: req.body.name 
     };
 
-    // Create a new faculty document using Mongoose
     FacultyModel.create(facultyData, function(err, faculty) {
         if (err) {
             console.error("Error creating faculty:", err);
             return res.status(500).json({ error: 'Error creating faculty' }); 
         }
-        // Faculty created successfully
-        res.status(201).json(faculty); // Send the created faculty document back to the client
+        res.status(201).json(faculty); 
     });
 });
 
