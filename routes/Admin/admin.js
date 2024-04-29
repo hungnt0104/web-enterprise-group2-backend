@@ -92,15 +92,53 @@ router.get('/events', (req, res) => {
     });
 });
 
+// router.get('/currentEvent', (req, res) => {
+//     EventModel.find({}, (err, events) => {
+//         if (err) {
+//             res.status(500).send(err.message);
+//         } else {
+//             if (events.length > 0) {
+//                 const finalEvent = events[events.length - 1]; // Get the last event in the array
+//                 console.log(finalEvent)
+//                 res.status(200).json(finalEvent);
+//             } else {
+//                 res.status(404).send('No events found');
+//             }
+//         }
+//     });
+// });
+
 router.get('/currentEvent', (req, res) => {
     EventModel.find({}, (err, events) => {
         if (err) {
             res.status(500).send(err.message);
         } else {
             if (events.length > 0) {
-                const finalEvent = events[events.length - 1]; // Get the last event in the array
-                console.log(finalEvent)
-                res.status(200).json(finalEvent);
+                let nearestEvent = null;
+                let nearestDifference = Infinity; // Initialize with Infinity to ensure any first event will be closer
+                const currentDate = new Date();
+                
+                events.forEach(event => {
+                    const startDate = new Date(event.startDate);
+                    let difference = Math.ceil((startDate - currentDate) / (1000 * 60 * 60 * 24)); // Calculate difference in days
+                    // console.log(-difference)
+                    difference = -difference
+                    // Adjusted the condition to ensure only past or present events are considered
+                    if (difference >= 0 && (difference < nearestDifference)) {
+                        // console.log(difference)
+                        nearestDifference = difference;
+                        nearestEvent = event;
+                        
+                    }
+                });
+                // console.log(nearestDifference)
+
+                // If nearestEvent is still null, it means there are no past or present events
+                if (nearestEvent !== null) {
+                    res.status(200).json(nearestEvent);
+                } else {
+                    res.status(404).send('No past or present events found');
+                }
             } else {
                 res.status(404).send('No events found');
             }
